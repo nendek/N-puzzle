@@ -1,5 +1,6 @@
 import argparse
 import re
+from npuzzle_graph import NpuzzleGraph
 
 def check_continuity(tab):
     res = []
@@ -31,17 +32,26 @@ def parsing(puzzle):
                     puzzle_valid.append([int(c) for c in line.split() if c.isdigit()][:dim])
     if not check_continuity(puzzle_valid):
         raise("FormatError")
-    return puzzle_valid
+    ret = []
+    for lst in puzzle_valid:
+        ret.extend(lst)
+    return ret, dim
 
 
 def n_puzzle(f):
     with open(f, "r") as f:
         puzzle = f.read()
     try:
-        puzzle = parsing(puzzle)
+        puzzle, dim = parsing(puzzle)
     except:
         print("Error")
         return
+    final_puzzle = puzzle.copy()
+    final_puzzle.sort()
+    final_puzzle.append(final_puzzle.pop(0))
+    graph = NpuzzleGraph(dim, puzzle, final_puzzle)
+
+    print(graph)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
