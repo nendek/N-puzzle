@@ -6,6 +6,7 @@ class NpuzzleState():
         self.h = h
         self.tuple = tuple(puzzle)
         self.len = len_puzzle
+        self.parent = None
     
     def __str__(self):
         ret = ""
@@ -17,3 +18,13 @@ class NpuzzleState():
             ret += "\t{}\n".format(self.puzzle[i * self.len:(i + 1) * self.len])
         
         return ret
+
+    def __lt__(self, other):
+        if self.f != other.f:
+            return self.f < other.f
+
+        if self.h != other.h:
+            return self.h < other.h
+
+        return self.g < other.g
+

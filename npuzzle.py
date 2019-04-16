@@ -1,6 +1,8 @@
 import argparse
 import re
+from heapq import heappush, heappop
 from npuzzle_graph import NpuzzleGraph
+from npuzzle_state import NpuzzleState
 
 def check_continuity(tab):
     res = []
@@ -38,6 +40,34 @@ def parsing(puzzle):
     return ret, dim
 
 
+
+
+def a_star(graph):
+    heappush(graph.open, (NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristique_nb_coups(graph.puzzle))))
+    while True:
+        graph.time_complexity += 1
+        tmp_s_c = len(graph.open) + len(graph.closed)
+        if tmp_s_c > graph.size_complexity:
+            graph.size_complexity = tmp_s_c
+        if len(graph.open) == 0:
+            raise("Unsolvable")
+        current = heappop(graph.open)
+        graph.closed.add(current.tuple)
+        if current.puzzle == graph.objectif:
+            return current
+        graph.handle_next_state(current)
+
+
+def print_solution(result, graph):
+    tot = []
+    while result:
+        tot.insert(0, result)
+        result = result.parent
+    for elem in tot:
+        print(elem)
+    print("time complexity = ", graph.time_complexity)
+    print("size complexity = ", graph.size_complexity)
+
 def n_puzzle(f):
     with open(f, "r") as f:
         puzzle = f.read()
@@ -48,10 +78,13 @@ def n_puzzle(f):
         return
     final_puzzle = puzzle.copy()
     final_puzzle.sort()
-    final_puzzle.append(final_puzzle.pop(0))
-    graph = NpuzzleGraph(dim, puzzle, final_puzzle)
 
-    print(graph)
+    graph = NpuzzleGraph(dim, puzzle, final_puzzle)
+    if graph.is_solvable() == False:
+        print("Error taquin unsolvable")
+        return
+    res = a_star(graph)
+    print_solution(res, graph)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
