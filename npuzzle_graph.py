@@ -11,6 +11,7 @@ class NpuzzleGraph():
         self.open = []
         self.size_complexity = 0
         self.time_complexity = 0
+        self.heuristic = self.heuristique_manhattan
 
     def __str__(self):
         ret = ""
@@ -46,7 +47,7 @@ class NpuzzleGraph():
                 total += 1
         return total
 
-    def heuristique_nb_coups(self, puzzle):
+    def heuristique_manhattan(self, puzzle):
         total = 0
         for index in range(0, len(puzzle)):
             total += abs(floor(self.objectif.index(puzzle[index]) % self.len) - floor(index % self.len)) + abs(floor(self.objectif.index(puzzle[index]) / self.len) - floor(index / self.len))
@@ -74,7 +75,7 @@ class NpuzzleGraph():
             self.swap(simulation.index(0), simulation.index(0) - self.len, simulation)
 
     def handle_open_close(self, state, simulation):
-        new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristique_nb_coups(simulation))
+        new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
         new_state.parent = state
         found = False
         for i in range(len(self.open)):

@@ -1,5 +1,6 @@
 import argparse
 import re
+import time
 from heapq import heappush, heappop
 from npuzzle_graph import NpuzzleGraph
 from npuzzle_state import NpuzzleState
@@ -43,7 +44,7 @@ def parsing(puzzle):
 
 
 def a_star(graph):
-    heappush(graph.open, (NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristique_nb_coups(graph.puzzle))))
+    heappush(graph.open, (NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle))))
     while True:
         graph.time_complexity += 1
         tmp_s_c = len(graph.open) + len(graph.closed)
@@ -58,15 +59,16 @@ def a_star(graph):
         graph.handle_next_state(current)
 
 
-def print_solution(result, graph):
+def print_solution(result, graph, true_time):
     tot = []
     while result:
         tot.insert(0, result)
         result = result.parent
     for elem in tot:
         print(elem)
-    print("time complexity = ", graph.time_complexity)
-    print("size complexity = ", graph.size_complexity)
+    print("time complexity =", graph.time_complexity)
+    print("size complexity =", graph.size_complexity)
+    print("time duration =", true_time)
 
 def n_puzzle(f):
     with open(f, "r") as f:
@@ -83,8 +85,9 @@ def n_puzzle(f):
     if graph.is_solvable() == False:
         print("Error taquin unsolvable")
         return
+    start = time.time()
     res = a_star(graph)
-    print_solution(res, graph)
+    print_solution(res, graph, time.time() - start)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
