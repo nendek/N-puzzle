@@ -44,15 +44,20 @@ def parsing(puzzle):
 
 
 def a_star(graph):
-    heappush(graph.open, (NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle))))
+    dep = NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle))
+    heappush(graph.open, dep)
+    graph.open_set.add(dep.tuple)
+
+#    heappush(graph.open, NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle)))
     while True:
         graph.time_complexity += 1
         tmp_s_c = len(graph.open) + len(graph.closed)
         if tmp_s_c > graph.size_complexity:
             graph.size_complexity = tmp_s_c
-        if len(graph.open) == 0:
-            raise("Unsolvable")
+#        if len(graph.open) == 0:
+#            raise("Unsolvable")
         current = heappop(graph.open)
+        graph.open_set.remove(current.tuple)
         graph.closed.add(current.tuple)
         if current.puzzle == graph.objectif:
             return current

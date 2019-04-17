@@ -1,4 +1,4 @@
-from math import floor
+from math import floor, sqrt
 from heapq import heappush, heappop
 from npuzzle_state import NpuzzleState
 
@@ -7,9 +7,10 @@ class NpuzzleGraph():
         self.len = len_puzzle
         self.puzzle = puzzle
         self.create_objectif()
-#        self.objectif = objectif
-        self.closed = set()
         self.open = []
+        self.closedq = []
+        self.open_set = set()
+        self.closed = set()
         self.size_complexity = 0
         self.time_complexity = 0
         self.heuristic = self.heuristique_manhattan
@@ -90,10 +91,10 @@ class NpuzzleGraph():
             
         self.objectif = objectif
 
-    def heuristique_placement(self):
+    def heuristique_hamming(self, puzzle):
         total = 0
-        for index in range(0, len(self.simulation)):
-            if self.simulation[index] != self.objectif[index]:
+        for index in range(0, len(puzzle)):
+            if puzzle[index] != self.objectif[index]:
                 total += 1
         return total
 
@@ -124,30 +125,45 @@ class NpuzzleGraph():
         if direction == 4:
             self.swap(simulation.index(0), simulation.index(0) - self.len, simulation)
 
+#    def handle_open_close(self, state, simulation):
+#        new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
+#        new_state.parent = state
+#        found = False
+#        for i in range(len(self.open)):
+#            if new_state.puzzle == self.open[i].puzzle:
+#                found = True
+#                if new_state.f < self.open[i].f:
+#                    self.open.pop(i)
+#                    heappush(self.open, new_state)
+#                break
+#
+#        if new_state.tuple in self.closed:
+#            found = True
+#
+#        if found == False:
+#            heappush(self.open, new_state)
+
+
     def handle_open_close(self, state, simulation):
         new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
         new_state.parent = state
-        found = False
-        for i in range(len(self.open)):
-            if new_state.puzzle == self.open[i].puzzle:
-                found = True
-                if new_state.f < self.open[i].f:
-                    self.open.pop(i)
-                    heappush(self.open, new_state)
-                break
 
-        if new_state.tuple in self.closed:
-            found = True
-
-        if found == False:
+        if new_state.tuple in self.open_set:
+            for i in range(len(self.open)):
+                if new_state.puzzle == self.open[i].puzzle:
+                    index = i
+                    break
+            if new_state.f < self.open[index].f:
+                self.open.pop(index)
+                heappush(self.open, new_state)
+        elif new_state.tuple in self.closed:
+            pass
+        else:
             heappush(self.open, new_state)
+            self.open_set.add(new_state.tuple)
 
 
     def handle_next_state(self, state):
-        """
-        Pour l'instant cette fonction prend juste le meilleur h pour le prochain coup
-        """
-        
         index_0 = state.puzzle.index(0)
         # try left move
         if index_0 % self.len != 0:
