@@ -78,10 +78,8 @@ def n_puzzle(f):
     except:
         print("Error")
         return
-    final_puzzle = puzzle.copy()
-    final_puzzle.sort()
 
-    graph = NpuzzleGraph(dim, puzzle, final_puzzle)
+    graph = NpuzzleGraph(dim, puzzle)
     if graph.is_solvable() == False:
         print("Error taquin unsolvable")
         return

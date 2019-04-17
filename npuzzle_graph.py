@@ -3,10 +3,11 @@ from heapq import heappush, heappop
 from npuzzle_state import NpuzzleState
 
 class NpuzzleGraph():
-    def __init__(self, len_puzzle, puzzle, objectif):
+    def __init__(self, len_puzzle, puzzle):
         self.len = len_puzzle
         self.puzzle = puzzle
-        self.objectif = objectif
+        self.create_objectif()
+#        self.objectif = objectif
         self.closed = set()
         self.open = []
         self.size_complexity = 0
@@ -39,6 +40,55 @@ class NpuzzleGraph():
         if nb_swap % 2 == 0:
             return True
         return False
+
+    def create_objectif(self):
+        """
+        1 = right
+        2 = down
+        3 = left
+        4 = up
+        """
+        objectif = ['x' for i in range(len(self.puzzle))]
+        tmp = list(range(len(self.puzzle)))
+        tmp.append(tmp.pop(0))
+        ptr_o = 0
+        orientation = 1
+        for i in range(0, len(tmp)):
+            objectif[ptr_o] = tmp[i]
+            if orientation == 1:
+                ptr_o += 1
+                if ptr_o % self.len == self.len - 1:
+                    orientation = 2
+                if objectif[ptr_o] != 'x':
+                    orientation = 2
+                    ptr_o -= 1
+                    ptr_o += self.len
+            elif orientation == 2:
+                ptr_o += self.len
+                if floor(ptr_o / self.len) == self.len - 1:
+                    orientation = 3
+                if objectif[ptr_o] != 'x':
+                    orientation = 3
+                    ptr_o -= self.len
+                    ptr_o -= 1
+            elif orientation == 3:
+                ptr_o -= 1
+                if ptr_o % self.len == 0:
+                    orientation = 4
+                if objectif[ptr_o] != 'x':
+                    orientation = 4
+                    ptr_o += 1
+                    ptr_o -= self.len
+            elif orientation == 4:
+                ptr_o -= self.len
+                if floor(ptr_o /self.len) == 0:
+                    orientation = 1
+                if objectif[ptr_o] != 'x':
+                    orientation = 1
+                    ptr_o += self.len
+                    ptr_o += 1
+            
+        self.objectif = objectif
 
     def heuristique_placement(self):
         total = 0
