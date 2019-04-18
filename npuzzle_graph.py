@@ -22,6 +22,7 @@ class NpuzzleGraph():
         self.create_cols()
         self.create_table_rows()
         self.create_table_cols()
+        self.precalc_manhattan()
         self.time1 = 0
         self.time2 = 0
         self.time3 = 0
@@ -40,6 +41,14 @@ class NpuzzleGraph():
 
         return ret
 
+    def precalc_manhattan(self):
+        self.manhattan_cost = {}
+        for tuile in range(len(self.puzzle)):
+            self.manhattan_cost[tuile] = {}
+            pos_ref = self.objectif.index(tuile)
+            for pos in range(len(self.puzzle)):
+                self.manhattan_cost[tuile][pos] = abs((pos % self.len) - (pos_ref % self.len)) + abs(floor(pos / self.len) - floor(pos_ref / self.len))
+    
     def create_rows(self):
         self.ref_row = []
         for i in range(self.len):
@@ -153,7 +162,6 @@ class NpuzzleGraph():
             lc += 1
         return (lc)
 
-
     def create_table_rows(self):
         dico = {}
         for index in range(len(self.ref_row)):
@@ -205,7 +213,7 @@ class NpuzzleGraph():
     def heuristique_manhattan(self, puzzle):
         total = 0
         for index in range(0, len(puzzle)):
-            total += abs(floor(self.objectif.index(puzzle[index]) % self.len) - floor(index % self.len)) + abs(floor(self.objectif.index(puzzle[index]) / self.len) - floor(index / self.len))
+            total += self.manhattan_cost[index][puzzle.index(index)]
         return total
     
     def swap(self, pos1, pos2, lst):
