@@ -46,18 +46,18 @@ def parsing(puzzle):
 def a_star(graph):
     dep = NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle))
     heappush(graph.open, dep)
-    graph.open_set.add(dep.tuple)
+    graph.open_set[dep.tuple] = dep
 
-#    heappush(graph.open, NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle)))
     while True:
         graph.time_complexity += 1
+        print(graph.time_complexity)
+        if graph.time_complexity >= 40000:
+            return current
         tmp_s_c = len(graph.open) + len(graph.closed)
         if tmp_s_c > graph.size_complexity:
             graph.size_complexity = tmp_s_c
-#        if len(graph.open) == 0:
-#            raise("Unsolvable")
         current = heappop(graph.open)
-        graph.open_set.remove(current.tuple)
+        del graph.open_set[current.tuple]
         graph.closed.add(current.tuple)
         if current.puzzle == graph.objectif:
             return current
@@ -74,6 +74,9 @@ def print_solution(result, graph, true_time):
     print("time complexity =", graph.time_complexity)
     print("size complexity =", graph.size_complexity)
     print("time duration =", true_time)
+    print("time to bench 1 =", graph.time1)
+    print("time to bench 2 =", graph.time2)
+    print("time to bench 3 =", graph.time3)
 
 def n_puzzle(f):
     with open(f, "r") as f:

@@ -1,6 +1,8 @@
+import time
 from math import floor, sqrt
-from heapq import heappush, heappop
+from heapq import heappush, heappop, heapify
 from npuzzle_state import NpuzzleState
+from npuzzle_lc import NpuzzleLc
 
 class NpuzzleGraph():
     def __init__(self, len_puzzle, puzzle):
@@ -9,11 +11,15 @@ class NpuzzleGraph():
         self.create_objectif()
         self.open = []
         self.closedq = []
-        self.open_set = set()
+        self.open_set = {}
         self.closed = set()
         self.size_complexity = 0
         self.time_complexity = 0
-        self.heuristic = self.heuristique_manhattan
+#        self.heuristic = self.heuristique_manhattan
+        self.heuristic = self.heuristique_linear_conflicts
+        self.time1 = 0
+        self.time2 = 0
+        self.time3 = 0
 
     def __str__(self):
         ret = ""
@@ -91,6 +97,64 @@ class NpuzzleGraph():
             
         self.objectif = objectif
 
+    def get_lc(self, tile, row, ref_row):
+        if tile not in ref_row:
+            return None
+        ret = NpuzzleLc(tile, 0)
+        for elem in row:
+            if elem in ref_row:
+                if row.index(tile) < row.index(elem):
+                    if ref_row.index(tile) > ref_row.index(elem):
+                        ret.nb += 1
+                        ret.conflicts.append(elem)
+                if row.index(tile) > row.index(elem):
+                    if ref_row.index(tile) < ref_row.index(elem):
+                        ret.nb += 1
+                        ret.conflicts.append(elem)
+        if ret.nb == 0:
+            return None
+        return ret
+                
+    def get_linear_sum(self, line, ref_line):
+        total_C = []
+        lc = 0
+        for elem in line:
+            item = self.get_lc(elem, line, ref_line)
+            if item:
+                heappush(total_C, item)
+        while len(total_C):
+            popped = heappop(total_C)
+            if popped.nb == 0:
+                continue
+            for elem in popped.conflicts:
+                for elem2 in total_C:
+                    if elem2.tile == elem:
+                        elem2.decrem()
+            heapify(total_C)
+            lc += 1
+        return (lc)
+
+    def heuristique_linear_conflicts(self, puzzle):
+        start_time = time.time()
+        m_d = self.heuristique_manhattan(puzzle)
+        total_to_add = 0
+
+        for i in range(self.len):
+            row = puzzle[(i * self.len):((i + 1) * self.len)]
+            ref_row = self.objectif[(i * self.len):((i + 1) * self.len)]
+            total_to_add += 2 * self.get_linear_sum(row, ref_row)
+        for i in range(self.len):
+            col = []
+            ref_col = []
+            for j in range(len(puzzle)):
+                if j % self.len == i:
+                    col.append(puzzle[j])
+                    ref_col.append(self.objectif[j])
+            total_to_add += 2 * self.get_linear_sum(col, ref_col)
+        self.time1 += time.time() - start_time
+
+        return m_d + total_to_add
+
     def heuristique_hamming(self, puzzle):
         total = 0
         for index in range(0, len(puzzle)):
@@ -148,19 +212,20 @@ class NpuzzleGraph():
         new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
         new_state.parent = state
 
-        if new_state.tuple in self.open_set:
-            for i in range(len(self.open)):
-                if new_state.puzzle == self.open[i].puzzle:
-                    index = i
-                    break
-            if new_state.f < self.open[index].f:
-                self.open.pop(index)
-                heappush(self.open, new_state)
+        if new_state.tuple in self.open_set.keys():
+            old_one = self.open_set[new_state.tuple]
+            if new_state.f < old_one.f:
+                old_one.f = new_state.f
+                old_one.g = new_state.g
+                old_one.h = new_state.h
+                start_time = time.time()
+#                heappush(self.open, new_state)
+                self.time2 += time.time() - start_time
         elif new_state.tuple in self.closed:
             pass
         else:
             heappush(self.open, new_state)
-            self.open_set.add(new_state.tuple)
+            self.open_set[new_state.tuple] = new_state
 
 
     def handle_next_state(self, state):
