@@ -3,6 +3,7 @@ from math import floor, sqrt
 from heapq import heappush, heappop, heapify
 from npuzzle_state import NpuzzleState
 from npuzzle_lc import NpuzzleLc
+from itertools import permutations
 
 class NpuzzleGraph():
     def __init__(self, len_puzzle, puzzle):
@@ -17,6 +18,10 @@ class NpuzzleGraph():
         self.time_complexity = 0
 #        self.heuristic = self.heuristique_manhattan
         self.heuristic = self.heuristique_linear_conflicts
+        self.create_rows()
+        self.create_cols()
+        self.create_table_rows()
+        self.create_table_cols()
         self.time1 = 0
         self.time2 = 0
         self.time3 = 0
@@ -34,6 +39,20 @@ class NpuzzleGraph():
             ret += "\t{}\n".format(self.objectif[i * self.len:(i + 1) * self.len])
 
         return ret
+
+    def create_rows(self):
+        self.ref_row = []
+        for i in range(self.len):
+            self.ref_row.append(self.objectif[(i * self.len):((i + 1) * self.len)])
+
+    def create_cols(self):
+        self.ref_col = []
+        for i in range(self.len):
+            col = []
+            for j in range(len(self.objectif)):
+                if j % self.len == i:
+                    col.append(self.objectif[j])
+            self.ref_col.append(col)
 
     def is_solvable(self):
         nb_swap = 0
@@ -134,24 +153,45 @@ class NpuzzleGraph():
             lc += 1
         return (lc)
 
+
+    def create_table_rows(self):
+        dico = {}
+        for index in range(len(self.ref_row)):
+            perm = permutations(self.ref_row[index])
+            # second, calc it with graph.get_linear_sum
+            for elem in perm:
+                cost = self.get_linear_sum(elem, self.ref_row[index])
+                # third: save it
+                dico[tuple(elem)] = cost
+        self.dic_row = dico
+
+    def create_table_cols(self):
+        dico = {}
+        for index in range(len(self.ref_col)):
+            perm = permutations(self.ref_col[index])
+            # second, calc it with graph.get_linear_sum
+            for elem in perm:
+                cost = self.get_linear_sum(elem, self.ref_col[index])
+                # third: save it
+                dico[tuple(elem)] = cost
+        self.dic_col = dico
+
     def heuristique_linear_conflicts(self, puzzle):
-        start_time = time.time()
         m_d = self.heuristique_manhattan(puzzle)
         total_to_add = 0
-
+        size = range(len(puzzle))
+        
         for i in range(self.len):
             row = puzzle[(i * self.len):((i + 1) * self.len)]
-            ref_row = self.objectif[(i * self.len):((i + 1) * self.len)]
-            total_to_add += 2 * self.get_linear_sum(row, ref_row)
+            if tuple(row) in self.dic_row:
+                total_to_add += 2 * self.dic_row[tuple(row)]
         for i in range(self.len):
             col = []
-            ref_col = []
-            for j in range(len(puzzle)):
+            for j in size:
                 if j % self.len == i:
                     col.append(puzzle[j])
-                    ref_col.append(self.objectif[j])
-            total_to_add += 2 * self.get_linear_sum(col, ref_col)
-        self.time1 += time.time() - start_time
+            if tuple(col) in self.dic_col:
+                total_to_add += 2 * self.dic_col[tuple(col)]
 
         return m_d + total_to_add
 
@@ -189,25 +229,6 @@ class NpuzzleGraph():
         if direction == 4:
             self.swap(simulation.index(0), simulation.index(0) - self.len, simulation)
 
-#    def handle_open_close(self, state, simulation):
-#        new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
-#        new_state.parent = state
-#        found = False
-#        for i in range(len(self.open)):
-#            if new_state.puzzle == self.open[i].puzzle:
-#                found = True
-#                if new_state.f < self.open[i].f:
-#                    self.open.pop(i)
-#                    heappush(self.open, new_state)
-#                break
-#
-#        if new_state.tuple in self.closed:
-#            found = True
-#
-#        if found == False:
-#            heappush(self.open, new_state)
-
-
     def handle_open_close(self, state, simulation):
         new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
         new_state.parent = state
@@ -218,9 +239,7 @@ class NpuzzleGraph():
                 old_one.f = new_state.f
                 old_one.g = new_state.g
                 old_one.h = new_state.h
-                start_time = time.time()
 #                heappush(self.open, new_state)
-                self.time2 += time.time() - start_time
         elif new_state.tuple in self.closed:
             pass
         else:

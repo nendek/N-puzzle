@@ -50,7 +50,7 @@ def a_star(graph):
 
     while True:
         graph.time_complexity += 1
-        print(graph.time_complexity)
+#        print(graph.time_complexity)
         if graph.time_complexity >= 40000:
             return current
         tmp_s_c = len(graph.open) + len(graph.closed)
@@ -75,8 +75,9 @@ def print_solution(result, graph, true_time):
     print("size complexity =", graph.size_complexity)
     print("time duration =", true_time)
     print("time to bench 1 =", graph.time1)
+    print("percentage = {:2.2f}%".format((graph.time1 / true_time) * 100))
     print("time to bench 2 =", graph.time2)
-    print("time to bench 3 =", graph.time3)
+#    print("time to bench 2 =", graph.time2)
 
 def n_puzzle(f):
     with open(f, "r") as f:
