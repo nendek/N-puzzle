@@ -121,6 +121,8 @@ class NpuzzleGraph():
                     ptr_o += self.len
                     ptr_o += 1
             
+
+#        self.objectif = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         self.objectif = objectif
 
     def get_lc(self, tile, row, ref_row):
@@ -183,6 +185,7 @@ class NpuzzleGraph():
         self.dic_col = dico
 
     def heuristique_linear_conflicts(self, puzzle):
+        start_time = time.time()
         m_d = self.heuristique_manhattan(puzzle)
         total_to_add = 0
         lsize = self.len
@@ -202,6 +205,7 @@ class NpuzzleGraph():
                     col.append(puzzle[j])
             if tuple(col) in dic_col:
                 total_to_add += 2 * dic_col[tuple(col)]
+        self.time1 += time.time() - start_time
         return m_d + total_to_add
 
     def heuristique_hamming(self, puzzle):
@@ -215,7 +219,7 @@ class NpuzzleGraph():
     def heuristique_manhattan(self, puzzle):
         total = 0
         manhattan_cost = self.manhattan_cost
-        for index in self.range_len_puzzle:
+        for index in self.range_len_puzzle[1:]:
             total += manhattan_cost[index][puzzle.index(index)]
         return total
     
