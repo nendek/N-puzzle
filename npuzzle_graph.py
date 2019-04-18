@@ -9,6 +9,8 @@ class NpuzzleGraph():
     def __init__(self, len_puzzle, puzzle):
         self.len = len_puzzle
         self.puzzle = puzzle
+        self.range_len_puzzle_cot = range(len_puzzle)
+        self.range_len_puzzle = range(len(puzzle))
         self.create_objectif()
         self.open = []
         self.closedq = []
@@ -43,11 +45,7 @@ class NpuzzleGraph():
 
     def precalc_manhattan(self):
         self.manhattan_cost = {}
-        for tuile in range(len(self.puzzle)):
-            self.manhattan_cost[tuile] = {}
-            pos_ref = self.objectif.index(tuile)
-            for pos in range(len(self.puzzle)):
-                self.manhattan_cost[tuile][pos] = abs((pos % self.len) - (pos_ref % self.len)) + abs(floor(pos / self.len) - floor(pos_ref / self.len))
+        self.manhattan_cost = {tuile: {pos: abs((pos % self.len) - (self.objectif.index(tuile) % self.len)) + abs(floor(pos / self.len) - floor(self.objectif.index(tuile) / self.len)) for pos in self.range_len_puzzle} for tuile in self.range_len_puzzle}
     
     def create_rows(self):
         self.ref_row = []
@@ -83,8 +81,8 @@ class NpuzzleGraph():
         3 = left
         4 = up
         """
-        objectif = ['x' for i in range(len(self.puzzle))]
-        tmp = list(range(len(self.puzzle)))
+        tmp = list(self.range_len_puzzle)
+        objectif = ['x' for i in self.range_len_puzzle]
         tmp.append(tmp.pop(0))
         ptr_o = 0
         orientation = 1
@@ -187,39 +185,42 @@ class NpuzzleGraph():
     def heuristique_linear_conflicts(self, puzzle):
         m_d = self.heuristique_manhattan(puzzle)
         total_to_add = 0
-        size = range(len(puzzle))
+        lsize = self.len
+        dic_row = self.dic_row
+        dic_col = self.dic_col
+        range_len_puzzle = self.range_len_puzzle
+        range_len_puzzle_cot = self.range_len_puzzle_cot
         
-        for i in range(self.len):
-            row = puzzle[(i * self.len):((i + 1) * self.len)]
-            if tuple(row) in self.dic_row:
-                total_to_add += 2 * self.dic_row[tuple(row)]
-        for i in range(self.len):
+        for i in range_len_puzzle_cot:
+            row = puzzle[(i * lsize):((i + 1) * lsize)]
+            if tuple(row) in dic_row:
+                total_to_add += 2 * dic_row[tuple(row)]
+        for i in range_len_puzzle_cot:
             col = []
-            for j in size:
-                if j % self.len == i:
+            for j in range_len_puzzle:
+                if j % lsize == i:
                     col.append(puzzle[j])
-            if tuple(col) in self.dic_col:
-                total_to_add += 2 * self.dic_col[tuple(col)]
-
+            if tuple(col) in dic_col:
+                total_to_add += 2 * dic_col[tuple(col)]
         return m_d + total_to_add
 
     def heuristique_hamming(self, puzzle):
         total = 0
-        for index in range(0, len(puzzle)):
-            if puzzle[index] != self.objectif[index]:
+        objectif = self.objectif
+        for index in self.range_len_puzzle:
+            if puzzle[index] != objectif[index]:
                 total += 1
         return total
 
     def heuristique_manhattan(self, puzzle):
         total = 0
-        for index in range(0, len(puzzle)):
-            total += self.manhattan_cost[index][puzzle.index(index)]
+        manhattan_cost = self.manhattan_cost
+        for index in self.range_len_puzzle:
+            total += manhattan_cost[index][puzzle.index(index)]
         return total
     
     def swap(self, pos1, pos2, lst):
-        tmp = lst[pos1]
-        lst[pos1] = lst[pos2]
-        lst[pos2] = tmp
+        lst[pos1], lst[pos2] = lst[pos2], lst[pos1]
     
     def move_puzzle(self, direction, simulation):
         """
@@ -280,5 +281,3 @@ class NpuzzleGraph():
             simulation = state.puzzle.copy()
             self.move_puzzle(4, simulation)
             self.handle_open_close(state, simulation)
-    
-
