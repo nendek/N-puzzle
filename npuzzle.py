@@ -21,15 +21,16 @@ def parsing(puzzle):
     for line in puzzle:
         if len(line) == 0:
             break
-        if line[0] != '#' and not line[0].isdigit():
+        temp2 = re.findall(r"^[ ]*[#]", line)
+        temp = re.findall(r"^[ ]*(\d+)", line)
+        if len(temp2) <= 0 and len(temp) <= 0:
             raise("FormatError")
-        temp = re.findall(r"^(\d+)", line)
         if len(temp) > 0:
             if dim == None:
                 dim = int(temp[0])
                 pass
             else:
-                if re.match(r"^(\d+)([ ]\d+){" + re.escape(str(dim - 1)) + r"}(([ ][#].*$)|$)", line) is None:
+                if re.match(r"^[ ]*(\d+)([ ]+\d+){" + re.escape(str(dim - 1)) + r"}(([ ]*[#].*$)|$)", line) is None:
                     raise("FormatError")
                 else:
                     puzzle_valid.append([int(c) for c in line.split() if c.isdigit()][:dim])
