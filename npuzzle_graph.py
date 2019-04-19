@@ -121,14 +121,16 @@ class NpuzzleGraph():
                     ptr_o += self.len
                     ptr_o += 1
             
+
+#        self.objectif = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         self.objectif = objectif
 
     def get_lc(self, tile, row, ref_row):
-        if tile not in ref_row:
+        if tile not in ref_row or tile == 0 or tile == 'x':
             return None
         ret = NpuzzleLc(tile, 0)
         for elem in row:
-            if elem in ref_row:
+            if elem in ref_row and elem != 'x' and elem != 0:
                 if row.index(tile) < row.index(elem):
                     if ref_row.index(tile) > ref_row.index(elem):
                         ret.nb += 1
@@ -169,6 +171,15 @@ class NpuzzleGraph():
                 cost = self.get_linear_sum(elem, self.ref_row[index])
                 # third: save it
                 dico[tuple(elem)] = cost
+
+            for i in range(len(self.ref_row)):
+                cp = self.ref_row[index].copy()
+                cp[i] = 'x'
+                perm = permutations(cp)
+                for elem in perm:
+                    cost = self.get_linear_sum(elem, cp)
+                    dico[tuple(elem)] = cost
+
         self.dic_row = dico
 
     def create_table_cols(self):
@@ -180,9 +191,18 @@ class NpuzzleGraph():
                 cost = self.get_linear_sum(elem, self.ref_col[index])
                 # third: save it
                 dico[tuple(elem)] = cost
+
+            for i in range(len(self.ref_col)):
+                cp = self.ref_col[index].copy()
+                cp[i] = 'x'
+                perm = permutations(cp)
+                for elem in perm:
+                    cost = self.get_linear_sum(elem, cp)
+                    dico[tuple(elem)] = cost
         self.dic_col = dico
 
     def heuristique_linear_conflicts(self, puzzle):
+        start_time = time.time()
         m_d = self.heuristique_manhattan(puzzle)
         total_to_add = 0
         lsize = self.len
@@ -190,18 +210,24 @@ class NpuzzleGraph():
         dic_col = self.dic_col
         range_len_puzzle = self.range_len_puzzle
         range_len_puzzle_cot = self.range_len_puzzle_cot
+        ref_row = self.ref_row
+        ref_col = self.ref_col
         
         for i in range_len_puzzle_cot:
             row = puzzle[(i * lsize):((i + 1) * lsize)]
-            if tuple(row) in dic_row:
-                total_to_add += 2 * dic_row[tuple(row)]
+            if tuple([x if x in ref_row[i] else 'x' for x in row]) in dic_row:
+#                print(tuple([x if x in ref_row[i] else 'x' for x in row]), dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])])
+                total_to_add += 2 * dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])]
         for i in range_len_puzzle_cot:
             col = []
             for j in range_len_puzzle:
                 if j % lsize == i:
                     col.append(puzzle[j])
-            if tuple(col) in dic_col:
-                total_to_add += 2 * dic_col[tuple(col)]
+            if tuple([x if x in ref_col[i] else 'x' for x in col]) in dic_col:
+#                print(tuple([x if x in ref_col[i] else 'x' for x in col]),dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])])
+                total_to_add += 2 * dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])]
+        self.time1 += time.time() - start_time
+#        print(total_to_add)
         return m_d + total_to_add
 
     def heuristique_hamming(self, puzzle):
@@ -215,7 +241,7 @@ class NpuzzleGraph():
     def heuristique_manhattan(self, puzzle):
         total = 0
         manhattan_cost = self.manhattan_cost
-        for index in self.range_len_puzzle:
+        for index in self.range_len_puzzle[1:]:
             total += manhattan_cost[index][puzzle.index(index)]
         return total
     

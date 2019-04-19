@@ -52,8 +52,8 @@ def a_star(graph):
     while True:
         graph.time_complexity += 1
 #        print(graph.time_complexity)
-        if graph.time_complexity >= 40000:
-            return current
+#        if graph.time_complexity >= 40000:
+#            return current
         tmp_s_c = len(graph.open) + len(graph.closed)
         if tmp_s_c > graph.size_complexity:
             graph.size_complexity = tmp_s_c
