@@ -89,9 +89,13 @@ def n_puzzle(f):
         print("Error")
         return
 
-    graph = NpuzzleGraph(dim, puzzle)
-    if graph.is_solvable() == False:
-        print("Error taquin unsolvable")
+    try:
+        graph = NpuzzleGraph(dim, puzzle)
+    except Exception as e:
+        if e.__str__() == "unsolvable":
+            print("Error taquin unsolvable")
+        else:
+            print(e)
         return
     start = time.time()
     res = a_star(graph)

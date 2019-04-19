@@ -9,6 +9,7 @@ class NpuzzleGraph():
     def __init__(self, len_puzzle, puzzle):
         self.len = len_puzzle
         self.puzzle = puzzle
+        self.is_solvable()
         self.range_len_puzzle_cot = range(len_puzzle)
         self.range_len_puzzle = range(len(puzzle))
         self.create_objectif()
@@ -19,6 +20,7 @@ class NpuzzleGraph():
         self.size_complexity = 0
         self.time_complexity = 0
 #        self.heuristic = self.heuristique_manhattan
+#        self.heuristic = self.heuristique_euclidienne
         self.heuristic = self.heuristique_linear_conflicts #TODO modified by option
         self.cost = 1                                      #TODO modified by option
         self.create_rows()
@@ -26,6 +28,7 @@ class NpuzzleGraph():
         self.create_table_rows()
         self.create_table_cols()
         self.precalc_manhattan()
+        self.precalc_euclidienne()
         self.time1 = 0
         self.time2 = 0
         self.time3 = 0
@@ -43,6 +46,10 @@ class NpuzzleGraph():
             ret += "\t{}\n".format(self.objectif[i * self.len:(i + 1) * self.len])
 
         return ret
+
+    def precalc_euclidienne(self):
+        self.euclidienne_cost = {}
+        self.euclidienne_cost = {tuile: {pos: sqrt(((pos % self.len) - (self.objectif.index(tuile) % self.len))**2 + (floor(pos / self.len) - floor(self.objectif.index(tuile) / self.len))**2 ) for pos in self.range_len_puzzle} for tuile in self.range_len_puzzle}
 
     def precalc_manhattan(self):
         self.manhattan_cost = {}
@@ -64,28 +71,29 @@ class NpuzzleGraph():
 
     def is_solvable(self):
         nb_swap = 0
-#        ref = [i for i in range(0, len(self.puzzle))]
-#        ref.append(ref.pop(0))
         for tiles in self.puzzle:
             if tiles == 0:
                 continue
             for index in range(self.puzzle.index(tiles) + 1, len(self.puzzle)):
                 if tiles > self.puzzle[index] and self.puzzle[index] != 0:
-#                if self.objectif.index(tiles) > self.objectif.index(self.puzzle[index]) and self.puzzle[index] != 0:
                     nb_swap += 1
 
-#        print(self)
-#        print(nb_swap, self.manhattan_cost[0][self.puzzle.index(0)])
         if self.len % 2 == 1 and nb_swap % 2 == 0:
-            return True
-        if self.len %2 == 0 and nb_swap %2 == 0:
-            if nb_swap %2 == 0:
-                if self.manhattan_cost[0][self.puzzle.index(0)] % 2 == 0:
-                    return True
-            else:
-                if self.manhattan_cost[0][self.puzzle.index(0)] % 2 == 1:
-                    return True
-        return False
+            if (self.len - 2) % 8 <= 3:
+                raise Exception("unsolvable")
+        if self.len % 2 == 0:
+            if nb_swap % 2 == 1:
+                if floor(self.puzzle.index(0) / self.len) % 2 == 1:
+                    if (self.len - 2) % 8 <= 3:
+                        raise Exception("unsolvable")
+        if self.len % 2 == 0:
+            if nb_swap % 2 == 0:
+                if floor(self.puzzle.index(0) / self.len) % 2 == 0:
+                    if (self.len - 2) % 8 <= 3:
+                        raise Exception("unsolvable")
+        if (self.len - 2) % 8 > 3:
+            raise Exception("unsolvable")
+        return True
 
     def create_objectif(self):
         """
@@ -258,6 +266,14 @@ class NpuzzleGraph():
             total += manhattan_cost[index][puzzle.index(index)]
         return total
     
+    def heuristique_euclidienne(self, puzzle):
+        total = 0
+        euclidienne_cost = self.euclidienne_cost
+        for index in self.range_len_puzzle[1:]:
+            total += euclidienne_cost[index][puzzle.index(index)]
+        return total
+
+
     def swap(self, pos1, pos2, lst):
         lst[pos1], lst[pos2] = lst[pos2], lst[pos1]
     
