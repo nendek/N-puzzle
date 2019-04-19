@@ -1,12 +1,22 @@
 class NpuzzleState():
-    def __init__(self, puzzle, len_puzzle, g, h):
+    def __init__(self, puzzle, len_puzzle, g, h, parent, cost):
+        """
+        1 = a_star
+        2 = greedy
+        3 = uniform
+        """
         self.puzzle = puzzle
-        self.f = h + g
+        if cost == 1:
+            self.f = h + g
+        if cost == 2:
+            self.f = h
+        if cost == 3:
+            self.f = g
         self.g = g
         self.h = h
         self.tuple = tuple(puzzle)
         self.len = len_puzzle
-        self.parent = None
+        self.parent = parent
     
     def __str__(self):
         ret = ""

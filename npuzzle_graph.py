@@ -19,7 +19,8 @@ class NpuzzleGraph():
         self.size_complexity = 0
         self.time_complexity = 0
 #        self.heuristic = self.heuristique_manhattan
-        self.heuristic = self.heuristique_linear_conflicts
+        self.heuristic = self.heuristique_linear_conflicts #TODO modified by option
+        self.cost = 1                                      #TODO modified by option
         self.create_rows()
         self.create_cols()
         self.create_table_rows()
@@ -63,15 +64,27 @@ class NpuzzleGraph():
 
     def is_solvable(self):
         nb_swap = 0
-        copy = self.puzzle.copy()
-        while copy != self.objectif:
-            nb_swap += 1
-            for i in range(len(copy)):
-                if copy[i] != self.objectif[i]:
-                    self.swap(i, copy.index(self.objectif[i]), copy)
-                    break
-        if nb_swap % 2 == 0:
+#        ref = [i for i in range(0, len(self.puzzle))]
+#        ref.append(ref.pop(0))
+        for tiles in self.puzzle:
+            if tiles == 0:
+                continue
+            for index in range(self.puzzle.index(tiles) + 1, len(self.puzzle)):
+                if tiles > self.puzzle[index] and self.puzzle[index] != 0:
+#                if self.objectif.index(tiles) > self.objectif.index(self.puzzle[index]) and self.puzzle[index] != 0:
+                    nb_swap += 1
+
+#        print(self)
+#        print(nb_swap, self.manhattan_cost[0][self.puzzle.index(0)])
+        if self.len % 2 == 1 and nb_swap % 2 == 0:
             return True
+        if self.len %2 == 0 and nb_swap %2 == 0:
+            if nb_swap %2 == 0:
+                if self.manhattan_cost[0][self.puzzle.index(0)] % 2 == 0:
+                    return True
+            else:
+                if self.manhattan_cost[0][self.puzzle.index(0)] % 2 == 1:
+                    return True
         return False
 
     def create_objectif(self):
@@ -122,7 +135,7 @@ class NpuzzleGraph():
                     ptr_o += 1
             
 
-#        self.objectif = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+#        self.objectif = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]
         self.objectif = objectif
 
     def get_lc(self, tile, row, ref_row):
@@ -265,7 +278,7 @@ class NpuzzleGraph():
             self.swap(simulation.index(0), simulation.index(0) - self.len, simulation)
 
     def handle_open_close(self, state, simulation):
-        new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation))
+        new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation), state, self.cost)
         new_state.parent = state
 
         if new_state.tuple in self.open_set.keys():
