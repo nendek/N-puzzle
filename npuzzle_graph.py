@@ -187,20 +187,18 @@ class NpuzzleGraph():
         dico = {}
         for index in range(len(self.ref_row)):
             perm = permutations(self.ref_row[index])
-            # second, calc it with graph.get_linear_sum
             for elem in perm:
                 cost = self.get_linear_sum(elem, self.ref_row[index])
-                # third: save it
                 dico[tuple(elem)] = cost
+            self.create_2(dico, self.ref_row[index], self.ref_row[index])
 
-            for i in range(len(self.ref_row)):
-                cp = self.ref_row[index].copy()
-                cp[i] = 'x'
-                perm = permutations(cp)
-                for elem in perm:
-                    cost = self.get_linear_sum(elem, cp)
-                    dico[tuple(elem)] = cost
-
+#            for i in range(len(self.ref_row)):
+#                cp = self.ref_row[index].copy()
+#                cp[i] = 'x'
+#                perm = permutations(cp)
+#                for elem in perm:
+#                    cost = self.get_linear_sum(elem, cp)
+#                    dico[tuple(elem)] = cost
         self.dic_row = dico
 
     def create_table_cols(self):
@@ -213,14 +211,30 @@ class NpuzzleGraph():
                 # third: save it
                 dico[tuple(elem)] = cost
 
-            for i in range(len(self.ref_col)):
-                cp = self.ref_col[index].copy()
-                cp[i] = 'x'
-                perm = permutations(cp)
-                for elem in perm:
-                    cost = self.get_linear_sum(elem, cp)
-                    dico[tuple(elem)] = cost
+            self.create_2(dico, self.ref_col[index], self.ref_col[index])
+#            for i in range(len(self.ref_col)):
+#                cp = self.ref_col[index].copy()
+#                cp[i] = 'x'
+#                perm = permutations(cp)
+#                for elem in perm:
+#                    cost = self.get_linear_sum(elem, cp)
+#                    dico[tuple(elem)] = cost
         self.dic_col = dico
+
+    def create_2(self, dico, line, ref):
+        get_linear_sum = self.get_linear_sum
+        if sum([1 for elem in line if elem == 'x' ]) >= self.len - 2:
+            return
+        for index in range(self.len):
+            cp = line.copy()
+            cp[index] = 'x'
+            if tuple(cp) in dico:
+                continue
+            perm = permutations(cp)
+            for elem in perm:
+                dico[tuple(elem)] = get_linear_sum(elem, ref)
+            self.create_2(dico, cp, ref)
+
 
     def heuristique_linear_conflicts(self, puzzle):
         start_time = time.time()
