@@ -237,7 +237,6 @@ class NpuzzleGraph():
 
 
     def heuristique_linear_conflicts(self, puzzle):
-        start_time = time.time()
         m_d = self.heuristique_manhattan(puzzle)
         total_to_add = 0
         lsize = self.len
@@ -261,7 +260,6 @@ class NpuzzleGraph():
             if tuple([x if x in ref_col[i] else 'x' for x in col]) in dic_col:
 #                print(tuple([x if x in ref_col[i] else 'x' for x in col]),dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])])
                 total_to_add += 2 * dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])]
-        self.time1 += time.time() - start_time
 #        print(total_to_add)
         return m_d + total_to_add
 
@@ -287,26 +285,6 @@ class NpuzzleGraph():
             total += euclidienne_cost[index][puzzle.index(index)]
         return total
 
-
-    def swap(self, pos1, pos2, lst):
-        lst[pos1], lst[pos2] = lst[pos2], lst[pos1]
-    
-    def move_puzzle(self, direction, simulation):
-        """
-        1 = left
-        2 = bot
-        3 = right
-        4 = up
-        """
-        if direction == 1:
-            self.swap(simulation.index(0), simulation.index(0) - 1, simulation)
-        if direction == 2:
-            self.swap(simulation.index(0), simulation.index(0) + self.len, simulation)
-        if direction == 3:
-            self.swap(simulation.index(0), simulation.index(0) + 1, simulation)
-        if direction == 4:
-            self.swap(simulation.index(0), simulation.index(0) - self.len, simulation)
-
     def handle_open_close(self, state, simulation):
         new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation), state, self.cost)
         new_state.parent = state
@@ -317,36 +295,34 @@ class NpuzzleGraph():
                 old_one.f = new_state.f
                 old_one.g = new_state.g
                 old_one.h = new_state.h
-#                heappush(self.open, new_state)
         elif new_state.tuple in self.closed:
             pass
         else:
             heappush(self.open, new_state)
             self.open_set[new_state.tuple] = new_state
 
-
-    def handle_next_state(self, state):
+    def handle_next_state(self, state, size):
         index_0 = state.puzzle.index(0)
         # try left move
-        if index_0 % self.len != 0:
+        if index_0 % size != 0:
             simulation = state.puzzle.copy()
-            self.move_puzzle(1, simulation)
+            simulation[index_0], simulation[index_0 - 1] = simulation[index_0 - 1], simulation[index_0]
             self.handle_open_close(state, simulation)
         
         # try bot move
-        if floor(index_0 / self.len) != self.len - 1:
+        if floor(index_0 / size) != size - 1:
             simulation = state.puzzle.copy()
-            self.move_puzzle(2, simulation)
+            simulation[index_0], simulation[index_0 + size] = simulation[index_0 + size], simulation[index_0]
             self.handle_open_close(state, simulation)
             
         # try right move
-        if index_0 % self.len != self.len - 1:
+        if index_0 % size != size - 1:
             simulation = state.puzzle.copy()
-            self.move_puzzle(3, simulation)
+            simulation[index_0], simulation[index_0 + 1] = simulation[index_0 + 1], simulation[index_0]
             self.handle_open_close(state, simulation)
             
         # try up move
-        if floor(index_0 / self.len) != 0:
+        if floor(index_0 / size) != 0:
             simulation = state.puzzle.copy()
-            self.move_puzzle(4, simulation)
+            simulation[index_0], simulation[index_0 - size] = simulation[index_0 - size], simulation[index_0]
             self.handle_open_close(state, simulation)

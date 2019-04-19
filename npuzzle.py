@@ -48,7 +48,7 @@ def a_star(graph):
     dep = NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle), None, graph.cost)
     heappush(graph.open, dep)
     graph.open_set[dep.tuple] = dep
-
+    size = graph.len
     while True:
         graph.time_complexity += 1
 #        print(graph.time_complexity)
@@ -62,7 +62,7 @@ def a_star(graph):
         graph.closed.add(current.tuple)
         if current.puzzle == graph.objectif:
             return current
-        graph.handle_next_state(current)
+        graph.handle_next_state(current, size)
 
 
 def print_solution(result, graph, true_time):
