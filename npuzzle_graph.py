@@ -192,33 +192,17 @@ class NpuzzleGraph():
                 dico[tuple(elem)] = cost
             self.create_2(dico, self.ref_row[index], self.ref_row[index])
 
-#            for i in range(len(self.ref_row)):
-#                cp = self.ref_row[index].copy()
-#                cp[i] = 'x'
-#                perm = permutations(cp)
-#                for elem in perm:
-#                    cost = self.get_linear_sum(elem, cp)
-#                    dico[tuple(elem)] = cost
         self.dic_row = dico
 
     def create_table_cols(self):
         dico = {}
         for index in range(len(self.ref_col)):
             perm = permutations(self.ref_col[index])
-            # second, calc it with graph.get_linear_sum
             for elem in perm:
                 cost = self.get_linear_sum(elem, self.ref_col[index])
-                # third: save it
                 dico[tuple(elem)] = cost
 
             self.create_2(dico, self.ref_col[index], self.ref_col[index])
-#            for i in range(len(self.ref_col)):
-#                cp = self.ref_col[index].copy()
-#                cp[i] = 'x'
-#                perm = permutations(cp)
-#                for elem in perm:
-#                    cost = self.get_linear_sum(elem, cp)
-#                    dico[tuple(elem)] = cost
         self.dic_col = dico
 
     def create_2(self, dico, line, ref):
