@@ -44,7 +44,6 @@ class NpuzzleGraph():
         ret += "objectif =\n"
         for i in range(self.len):
             ret += "\t{}\n".format(self.objectif[i * self.len:(i + 1) * self.len])
-
         return ret
 
     def precalc_euclidienne(self):
@@ -57,16 +56,23 @@ class NpuzzleGraph():
     
     def create_rows(self):
         self.ref_row = []
+        objectif = self.objectif
+        ref_row = self.ref_row
+        size = self.len
         for i in range(self.len):
-            self.ref_row.append(self.objectif[(i * self.len):((i + 1) * self.len)])
+            ref_row.append(objectif[(i * size):((i + 1) * size)])
+        self.ref_row = ref_row
 
     def create_cols(self):
         self.ref_col = []
+        objectif = self.objectif
+        size = self.len
+        range_obj = range(len(objectif))
         for i in range(self.len):
             col = []
-            for j in range(len(self.objectif)):
+            for j in range_obj:
                 if j % self.len == i:
-                    col.append(self.objectif[j])
+                    col.append(objectif[j])
             self.ref_col.append(col)
 
     def is_solvable(self):
@@ -141,8 +147,6 @@ class NpuzzleGraph():
                     orientation = 1
                     ptr_o += self.len
                     ptr_o += 1
-            
-
 #        self.objectif = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]
         self.objectif = objectif
 

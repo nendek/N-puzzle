@@ -41,9 +41,6 @@ def parsing(puzzle):
         ret.extend(lst)
     return ret, dim
 
-
-
-
 def a_star(graph):
     dep = NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle), None, graph.cost)
     heappush(graph.open, dep)
