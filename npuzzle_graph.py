@@ -237,17 +237,19 @@ class NpuzzleGraph():
         
         for i in range_len_puzzle_cot:
             row = puzzle[(i * lsize):((i + 1) * lsize)]
-            if tuple([x if x in ref_row[i] else 'x' for x in row]) in dic_row:
+            key = tuple([x if x in ref_row[i] else 'x' for x in row])
+            if key in dic_row:
 #                print(tuple([x if x in ref_row[i] else 'x' for x in row]), dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])])
-                total_to_add += dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])]
+                total_to_add += dic_row[key]
         for i in range_len_puzzle_cot:
             col = []
             for j in range_len_puzzle:
                 if j % lsize == i:
                     col.append(puzzle[j])
-            if tuple([x if x in ref_col[i] else 'x' for x in col]) in dic_col:
+            key = tuple([x if x in ref_col[i] else 'x' for x in col])
+            if key in dic_col:
 #                print(tuple([x if x in ref_col[i] else 'x' for x in col]),dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])])
-                total_to_add += dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])]
+                total_to_add += dic_col[key]
 #        print(total_to_add)
         self.time1 += time.time() - start_time
         return total_to_add + self.heuristique_manhattan(puzzle)
