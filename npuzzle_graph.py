@@ -192,7 +192,7 @@ class NpuzzleGraph():
         for index in range(len(self.ref_row)):
             perm = permutations(self.ref_row[index])
             for elem in perm:
-                cost = self.get_linear_sum(elem, self.ref_row[index])
+                cost =  2 * self.get_linear_sum(elem, self.ref_row[index])
                 dico[tuple(elem)] = cost
             self.create_2(dico, self.ref_row[index], self.ref_row[index])
 
@@ -203,7 +203,7 @@ class NpuzzleGraph():
         for index in range(len(self.ref_col)):
             perm = permutations(self.ref_col[index])
             for elem in perm:
-                cost = self.get_linear_sum(elem, self.ref_col[index])
+                cost = 2 * self.get_linear_sum(elem, self.ref_col[index])
                 dico[tuple(elem)] = cost
 
             self.create_2(dico, self.ref_col[index], self.ref_col[index])
@@ -220,12 +220,12 @@ class NpuzzleGraph():
                 continue
             perm = permutations(cp)
             for elem in perm:
-                dico[tuple(elem)] = get_linear_sum(elem, ref)
+                dico[tuple(elem)] = 2 * get_linear_sum(elem, ref)
             self.create_2(dico, cp, ref)
 
 
     def heuristique_linear_conflicts(self, puzzle):
-        m_d = self.heuristique_manhattan(puzzle)
+        start_time = time.time()
         total_to_add = 0
         lsize = self.len
         dic_row = self.dic_row
@@ -239,7 +239,7 @@ class NpuzzleGraph():
             row = puzzle[(i * lsize):((i + 1) * lsize)]
             if tuple([x if x in ref_row[i] else 'x' for x in row]) in dic_row:
 #                print(tuple([x if x in ref_row[i] else 'x' for x in row]), dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])])
-                total_to_add += 2 * dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])]
+                total_to_add += dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])]
         for i in range_len_puzzle_cot:
             col = []
             for j in range_len_puzzle:
@@ -247,9 +247,10 @@ class NpuzzleGraph():
                     col.append(puzzle[j])
             if tuple([x if x in ref_col[i] else 'x' for x in col]) in dic_col:
 #                print(tuple([x if x in ref_col[i] else 'x' for x in col]),dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])])
-                total_to_add += 2 * dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])]
+                total_to_add += dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])]
 #        print(total_to_add)
-        return m_d + total_to_add
+        self.time1 += time.time() - start_time
+        return total_to_add + self.heuristique_manhattan(puzzle)
 
     def heuristique_hamming(self, puzzle):
         total = 0
