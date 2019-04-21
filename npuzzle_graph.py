@@ -241,14 +241,15 @@ class NpuzzleGraph():
         
         for i in range_len_puzzle_cot:
             row = puzzle[(i * lsize):((i + 1) * lsize)]
-            key_row = tuple([x if x in ref_row[i] else 'x' for x in row])
-            if key_row in dic_row:
-                total_to_add += dic_row[key_row]
-
             col = [puzzle[index] for index in precalc_index[i]]
+
+            key_row = tuple([x if x in ref_row[i] else 'x' for x in row])
             key_col = tuple([x if x in ref_col[i] else 'x' for x in col])
+
             if key_col in dic_col:
                 total_to_add += dic_col[key_col]
+            if key_row in dic_row:
+                total_to_add += dic_row[key_row]
 
         return total_to_add + self.heuristique_manhattan(puzzle)
 
@@ -276,7 +277,6 @@ class NpuzzleGraph():
 
     def handle_open_close(self, state, simulation):
         new_state = NpuzzleState(simulation, self.len, state.g + 1, self.heuristic(simulation), state, self.cost)
-        new_state.parent = state
 
         if new_state.tuple in self.open_set.keys():
             old_one = self.open_set[new_state.tuple]
