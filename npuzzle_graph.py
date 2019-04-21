@@ -29,6 +29,7 @@ class NpuzzleGraph():
         self.create_table_cols()
         self.precalc_manhattan()
         self.precalc_euclidienne()
+        self.precalc_cols_indexs()
         self.time1 = 0
         self.time2 = 0
         self.time3 = 0
@@ -54,6 +55,9 @@ class NpuzzleGraph():
         self.manhattan_cost = {}
         self.manhattan_cost = {tuile: {pos: abs((pos % self.len) - (self.objectif.index(tuile) % self.len)) + abs(floor(pos / self.len) - floor(self.objectif.index(tuile) / self.len)) for pos in self.range_len_puzzle} for tuile in self.range_len_puzzle}
     
+    def precalc_cols_indexs(self):
+        self.precalc_col = [[j for j in range(self.len**2) if j % self.len == i] for i in range(self.len)]
+
     def create_rows(self):
         self.ref_row = []
         objectif = self.objectif
@@ -225,7 +229,6 @@ class NpuzzleGraph():
 
 
     def heuristique_linear_conflicts(self, puzzle):
-        start_time = time.time()
         total_to_add = 0
         lsize = self.len
         dic_row = self.dic_row
@@ -234,24 +237,19 @@ class NpuzzleGraph():
         range_len_puzzle_cot = self.range_len_puzzle_cot
         ref_row = self.ref_row
         ref_col = self.ref_col
+        precalc_index = self.precalc_col
         
         for i in range_len_puzzle_cot:
             row = puzzle[(i * lsize):((i + 1) * lsize)]
-            key = tuple([x if x in ref_row[i] else 'x' for x in row])
-            if key in dic_row:
-#                print(tuple([x if x in ref_row[i] else 'x' for x in row]), dic_row[tuple([x if x in ref_row[i] else 'x' for x in row])])
-                total_to_add += dic_row[key]
-        for i in range_len_puzzle_cot:
-            col = []
-            for j in range_len_puzzle:
-                if j % lsize == i:
-                    col.append(puzzle[j])
-            key = tuple([x if x in ref_col[i] else 'x' for x in col])
-            if key in dic_col:
-#                print(tuple([x if x in ref_col[i] else 'x' for x in col]),dic_col[tuple([x if x in ref_col[i] else 'x' for x in col])])
-                total_to_add += dic_col[key]
-#        print(total_to_add)
-        self.time1 += time.time() - start_time
+            key_row = tuple([x if x in ref_row[i] else 'x' for x in row])
+            if key_row in dic_row:
+                total_to_add += dic_row[key_row]
+
+            col = [puzzle[index] for index in precalc_index[i]]
+            key_col = tuple([x if x in ref_col[i] else 'x' for x in col])
+            if key_col in dic_col:
+                total_to_add += dic_col[key_col]
+
         return total_to_add + self.heuristique_manhattan(puzzle)
 
     def heuristique_hamming(self, puzzle):
