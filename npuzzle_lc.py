@@ -10,4 +10,3 @@ class NpuzzleLc():
 
     def __lt__(self, other):
         return self.nb > other.nb
-

@@ -6,7 +6,8 @@ from npuzzle_lc import NpuzzleLc
 from itertools import permutations
 
 class NpuzzleGraph():
-    def __init__(self, len_puzzle, puzzle):
+
+    def __init__(self, len_puzzle, puzzle, cost="a_star", heuristic="linear_conflicts"):
         self.len = len_puzzle
         self.puzzle = puzzle
         self.is_solvable()
@@ -19,10 +20,6 @@ class NpuzzleGraph():
         self.closed = set()
         self.size_complexity = 0
         self.time_complexity = 0
-#        self.heuristic = self.heuristique_manhattan
-#        self.heuristic = self.heuristique_euclidienne
-        self.heuristic = self.heuristique_linear_conflicts #TODO modified by option
-        self.cost = 1                                      #TODO modified by option
         self.create_rows()
         self.create_cols()
         self.create_table_rows()
@@ -30,9 +27,25 @@ class NpuzzleGraph():
         self.precalc_manhattan()
         self.precalc_euclidienne()
         self.precalc_cols_indexs()
-        self.time1 = 0
-        self.time2 = 0
-        self.time3 = 0
+        if heuristic == "linear_conflicts":
+            self.heuristic = self.heuristic_linear_conflicts
+        elif heuristic == "euclidienne":
+            self.heuristic = self.heuristic_euclidienne
+        elif heuristic == "hamming":
+            self.heuristic = self.heuristic_hamming
+        elif heuristic == "manhattan":
+            self.heuristic = self.heuristic_manhattan
+        else:
+            raise Exception("ErrorHeuristic")
+
+        if cost == "a_star":
+            self.cost = 1
+        elif cost == "greedy_searches":
+            self.cost = 2
+        elif cost == "uniform_cost":
+            self.cost = 3
+        else:
+            raise Exception("ErrorCost")
 
     def __str__(self):
         ret = ""
@@ -151,7 +164,6 @@ class NpuzzleGraph():
                     orientation = 1
                     ptr_o += self.len
                     ptr_o += 1
-#        self.objectif = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]
         self.objectif = objectif
 
     def get_lc(self, tile, row, ref_row):
@@ -228,7 +240,7 @@ class NpuzzleGraph():
             self.create_2(dico, cp, ref)
 
 
-    def heuristique_linear_conflicts(self, puzzle):
+    def heuristic_linear_conflicts(self, puzzle):
         total_to_add = 0
         lsize = self.len
         dic_row = self.dic_row
@@ -251,9 +263,9 @@ class NpuzzleGraph():
             if key_row in dic_row:
                 total_to_add += dic_row[key_row]
 
-        return total_to_add + self.heuristique_manhattan(puzzle)
+        return total_to_add + self.heuristic_manhattan(puzzle)
 
-    def heuristique_hamming(self, puzzle):
+    def heuristic_hamming(self, puzzle):
         total = 0
         objectif = self.objectif
         for index in self.range_len_puzzle:
@@ -261,14 +273,14 @@ class NpuzzleGraph():
                 total += 1
         return total
 
-    def heuristique_manhattan(self, puzzle):
+    def heuristic_manhattan(self, puzzle):
         total = 0
         manhattan_cost = self.manhattan_cost
         for index in self.range_len_puzzle[1:]:
             total += manhattan_cost[index][puzzle.index(index)]
         return total
     
-    def heuristique_euclidienne(self, puzzle):
+    def heuristic_euclidienne(self, puzzle):
         total = 0
         euclidienne_cost = self.euclidienne_cost
         for index in self.range_len_puzzle[1:]:
