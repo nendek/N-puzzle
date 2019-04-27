@@ -37,4 +37,3 @@ class NpuzzleState():
             return self.h < other.h
 
         return self.g < other.g
-

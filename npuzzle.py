@@ -2,13 +2,12 @@ import sys
 import argparse
 import re
 import time
-from heapq import heappush, heappop
 from PyQt5.QtWidgets import QApplication
 
 from npuzzle_graph import NpuzzleGraph
-from npuzzle_state import NpuzzleState
 from npuzzle_visu import Visu_option
 from npuzzle_visu import Visu_npuzzle
+from npuzzle_algo import a_star
 
 def check_continuity(tab):
     res = []
@@ -48,26 +47,6 @@ def parsing(puzzle):
         ret.extend(lst)
     return ret, dim
 
-def a_star(graph):
-    dep = NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle), None, graph.cost)
-    heappush(graph.open, dep)
-    graph.open_set[dep.tuple] = dep
-    size = graph.len
-    time_complexity = 0
-    while True:
-        time_complexity += 1
-        tmp_s_c = len(graph.open) + len(graph.closed)
-        if tmp_s_c > graph.size_complexity:
-            graph.size_complexity = tmp_s_c
-        current = heappop(graph.open)
-        del graph.open_set[current.tuple]
-        graph.closed.add(current.tuple)
-        if current.puzzle == graph.objectif:
-            graph.time_complexity = time_complexity
-            return current
-        graph.handle_next_state(current, size)
-
-
 def print_solution(result, graph, true_time):
     tot = []
     while result:
@@ -98,12 +77,10 @@ def n_puzzle(f, heuristic, cost, visu=False):
 
     if visu:
         app = QApplication(sys.argv)
-        visu = Visu_option()
-        visu2 = Visu_npuzzle(puzzle, dim)
+        visu = Visu_option(puzzle, dim)
+        visu.show()
         sys.exit(app.exec_())
-        print("OK")
     else:
-        graph = NpuzzleGraph(dim, puzzle, cost, heuristic)
         try:
             graph = NpuzzleGraph(dim, puzzle, cost, heuristic)
         except Exception as e:
