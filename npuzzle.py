@@ -63,9 +63,12 @@ def n_puzzle(f, heuristic, cost, visu=False):
         heuristic = "linear_conflicts"
     if cost == None:
         cost = "a_star"
-
-    with open(f, "r") as f:
-        puzzle = f.read()
+    try:
+        with open(f, "r") as f:
+            puzzle = f.read()
+    except Exception as e:
+        print("Error file input")
+        return 
     try:
         puzzle, dim = parsing(puzzle)
     except Exception as e:
