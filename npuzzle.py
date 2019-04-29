@@ -1,10 +1,13 @@
+import sys
 import argparse
 import re
 import time
-from heapq import heappush, heappop
+from PyQt5.QtWidgets import QApplication
 
 from npuzzle_graph import NpuzzleGraph
-from npuzzle_state import NpuzzleState
+from npuzzle_visu import Visu_option
+from npuzzle_visu import Visu_npuzzle
+from npuzzle_algo import a_star
 
 def check_continuity(tab):
     res = []
@@ -44,26 +47,6 @@ def parsing(puzzle):
         ret.extend(lst)
     return ret, dim
 
-def a_star(graph):
-    dep = NpuzzleState(graph.puzzle.copy(), graph.len, 0, graph.heuristic(graph.puzzle), None, graph.cost)
-    heappush(graph.open, dep)
-    graph.open_set[dep.tuple] = dep
-    size = graph.len
-    time_complexity = 0
-    while True:
-        time_complexity += 1
-        tmp_s_c = len(graph.open) + len(graph.closed)
-        if tmp_s_c > graph.size_complexity:
-            graph.size_complexity = tmp_s_c
-        current = heappop(graph.open)
-        del graph.open_set[current.tuple]
-        graph.closed.add(current.tuple)
-        if current.puzzle == graph.objectif:
-            graph.time_complexity = time_complexity
-            return current
-        graph.handle_next_state(current, size)
-
-
 def print_solution(result, graph, true_time):
     tot = []
     while result:
@@ -80,9 +63,12 @@ def n_puzzle(f, heuristic, cost, visu=False):
         heuristic = "linear_conflicts"
     if cost == None:
         cost = "a_star"
-
-    with open(f, "r") as f:
-        puzzle = f.read()
+    try:
+        with open(f, "r") as f:
+            puzzle = f.read()
+    except Exception as e:
+        print("Error file input")
+        return 
     try:
         puzzle, dim = parsing(puzzle)
     except Exception as e:
@@ -91,21 +77,29 @@ def n_puzzle(f, heuristic, cost, visu=False):
         else:
             print(e)
         return
-    try:
-        graph = NpuzzleGraph(dim, puzzle, cost, heuristic)
-    except Exception as e:
-        if e.__str__() == "unsolvable":
-            print("Error taquin unsolvable")
-        elif e.__str__() == "ErrorHeuristic":
-            print("Error heuristic don't exist")
-        elif e.__str__() == "ErrorCost":
-            print("Error cost don't exist")
-        else:
-            print(e)
-        return
-    start = time.time()
-    res = a_star(graph)
-    print_solution(res, graph, time.time() - start)
+
+    if visu:
+        app = QApplication(sys.argv)
+        visu = Visu_option(puzzle, dim)
+        visu.show()
+        sys.exit(app.exec_())
+    else:
+        try:
+            graph = NpuzzleGraph(dim, puzzle, cost, heuristic)
+        except Exception as e:
+            if e.__str__() == "unsolvable":
+                print("Error taquin unsolvable")
+            elif e.__str__() == "ErrorHeuristic":
+                print("Error heuristic don't exist")
+            elif e.__str__() == "ErrorCost":
+                print("Error cost don't exist")
+            else:
+                print(e)
+            return
+        start = time.time()
+        res = a_star(graph)
+        print_solution(res, graph, time.time() - start)
+    return
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
