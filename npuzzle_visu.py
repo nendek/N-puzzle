@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QRadioButton, QPushButton, QButtonGroup, QGroupBox, QGridLayout, QVBoxLayout, QLabel
-from PyQt5.QtGui import QPainter
+from PyQt5.QtWidgets import QApplication, QWidget, QRadioButton, QPushButton, QButtonGroup, QGroupBox, QGridLayout, QHBoxLayout, QLabel, QPlainTextEdit, QVBoxLayout
+from PyQt5.QtGui import QPainter, QGuiApplication
+import time
 
 from npuzzle_algo import a_star
 from npuzzle_graph import NpuzzleGraph
@@ -14,8 +15,8 @@ class Visu_npuzzle(QWidget):
         self.title = "SUPER N-puzzle solver ROZY"
         self.left = 500
         self.top = 300
-        self.width = 640
-        self.height = 480
+        self.width = 160
+        self.height = 120
         self.initUI()
     
     def initUI(self):
@@ -31,6 +32,7 @@ class Visu_npuzzle(QWidget):
         positions = [(i, j) for i in range(dim) for j in range(dim)]
         for pos, val in zip(positions, data):
             btn = QPushButton(str(val))
+            btn.setSizePolicy(50, 50)
             self.grid_layout.addWidget(btn, *pos)
         self.setLayout(self.grid_layout)
 
@@ -56,17 +58,11 @@ class Visu_option(QWidget):
         self.title = "SUPER N-puzzle solver options ROZY"
         self.left = 1200
         self.top = 300
-        self.width = 200
-        self.height = 480
+        self.width = 250
+        self.height = 600
         self.dialog = Visu_npuzzle(data, dim)
         self.initUI()
 
-    def paintEvent(self, e):
-        rect1 = QPainter(self)
-        rect1.drawRect(10, 230, 150, 100)
-        rect2 = QPainter(self)
-        rect2.drawRect(10, 110, 150, 80)
-        
     def initBtn(self):
         self.group_h = QButtonGroup(self)
         self.group_c = QButtonGroup(self)
@@ -102,18 +98,45 @@ class Visu_option(QWidget):
         self.btn_c_astar.setChecked(True)
 
         self.btn_solve = QPushButton("Solve", self)
-        self.btn_solve.move(20, 380)
+        self.btn_solve.move(60, 370)
         self.btn_solve.clicked.connect(self.solve)
         
         self.btn_previous = QPushButton("Previous", self)
-        self.btn_previous.move(100, 340)
+        self.btn_previous.move(5, 340)
         self.btn_previous.clicked.connect(self.previous)
 
         self.btn_next = QPushButton("next", self)
-        self.btn_next.move(20, 340)
+        self.btn_next.move(110, 340)
         self.btn_next.clicked.connect(self.next)
 
-        self.label_h = QLabel("Heuristic choices")
+        self.label_h = QLabel("Heuristic choice :", self)
+        self.label_h.move(10, 210)
+        self.label_c = QLabel("Cost choice :", self)
+        self.label_c.move(10, 90)
+
+        self.result = QLabel("")
+        self.current_move = QLabel("")
+
+        self.vbox = QVBoxLayout()
+        self.vbox.addWidget(self.label_h)
+        self.vbox.addWidget(self.btn_h_lc)
+        self.vbox.addWidget(self.btn_h_man)
+        self.vbox.addWidget(self.btn_h_ham)
+        self.vbox.addWidget(self.btn_h_euc)
+
+        self.vbox.addWidget(self.label_c)
+        self.vbox.addWidget(self.btn_c_astar)
+        self.vbox.addWidget(self.btn_c_uni)
+        self.vbox.addWidget(self.btn_c_greedy)
+
+        self.vbox.addWidget(self.btn_previous)
+        self.vbox.addWidget(self.btn_next)
+        self.vbox.addWidget(self.btn_solve)
+        self.vbox.addWidget(self.result)
+        self.vbox.addWidget(self.current_move)
+
+#        self.vbox.addStretch(1)
+        self.setLayout(self.vbox)
 
     def initUI(self):
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -153,7 +176,9 @@ class Visu_option(QWidget):
                 print(e)
             return
 
+        start_time = time.time()
         self.res = a_star(graph)
+        true_time = time.time() - start_time
         solutions = []
         res = self.res
         while res:
@@ -163,6 +188,25 @@ class Visu_option(QWidget):
         self.solutions_visu = len(solutions) - 1
         self.dialog.data = self.solutions[self.solutions_visu].puzzle
         self.dialog.updateGrid()
+
+        # display infos
+        widgetToRemove = self.result
+        widgetToRemove.setParent(None)
+        widgetToRemove.deleteLater()
+        text = "Nb moves : {}\n".format(self.res.g)
+        text += "Time complexity : {}\n".format(graph.time_complexity)
+        text += "Space complexity : {}\n".format(graph.size_complexity)
+        text += "True time resolution : {:2f}\n".format(true_time)
+        self.result = QLabel(text)
+        self.vbox.addWidget(self.result)
+
+        # display move in other window
+        widgetToRemove = self.current_move
+        widgetToRemove.setParent(None)
+        widgetToRemove.deleteLater()
+        self.current_move = QLabel("Current move : " + str(self.solutions_visu))
+        self.vbox.addWidget(self.current_move)
+
         return
 
     def next(self):
@@ -174,6 +218,12 @@ class Visu_option(QWidget):
         self.dialog.data = self.solutions[self.solutions_visu].puzzle
         self.dialog.updateGrid()
 
+        widgetToRemove = self.current_move
+        widgetToRemove.setParent(None)
+        widgetToRemove.deleteLater()
+        self.current_move = QLabel("Current move : " + str(self.solutions_visu))
+        self.vbox.addWidget(self.current_move)
+
         return
 
     def previous(self):
@@ -184,4 +234,10 @@ class Visu_option(QWidget):
         self.solutions_visu -= 1
         self.dialog.data = self.solutions[self.solutions_visu].puzzle
         self.dialog.updateGrid()
+
+        widgetToRemove = self.current_move
+        widgetToRemove.setParent(None)
+        widgetToRemove.deleteLater()
+        self.current_move = QLabel("Current move : " + str(self.solutions_visu))
+        self.vbox.addWidget(self.current_move)
         return
