@@ -167,6 +167,11 @@ class Visu_option(QWidget):
             graph = NpuzzleGraph(self.dialog.dim, self.dialog.data_init, cost, heuristic)
         except Exception as e:
             if e.__str__() == "unsolvable":
+                widgetToRemove = self.result
+                widgetToRemove.setParent(None)
+                widgetToRemove.deleteLater()
+                self.result = QLabel("Error taquin unsolvable")
+                self.vbox.addWidget(self.result)
                 print("Error taquin unsolvable")
             elif e.__str__() == "ErrorHeuristic":
                 print("Error heuristic don't exist")

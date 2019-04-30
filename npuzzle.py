@@ -39,7 +39,9 @@ def parsing(puzzle):
                 if re.match(r"^[ ]*(\d+)([ ]+\d+){" + re.escape(str(dim - 1)) + r"}(([ ]*[#].*$)|$)", line) is None:
                     raise Exception("parsing")
                 else:
-                    puzzle_valid.append([int(c) for c in line.split() if c.isdigit()][:dim])
+                    tmp = line.split("#")
+                    tmp = tmp[0]
+                    puzzle_valid.append([int(c) for c in tmp.split() if c.isdigit()][:dim])
     if not check_continuity(puzzle_valid):
         raise Exception("parsing")
     ret = []
@@ -73,7 +75,7 @@ def n_puzzle(f, heuristic, cost, visu=False):
         puzzle, dim = parsing(puzzle)
     except Exception as e:
         if e.__str__() == "parsing":
-            print("Error format in your N-puzzle file\n Please enter N-puzzle with size >= 3\n Exemple:\n  #comment\n  3 (dimention)\n  1 2 3\n  5 6 7\n  8 4 0\n")
+            print("Error format in your N-puzzle file\n Please enter N-puzzle with size >= 3\n Exemple:\n  #comment\n  3 (size)\n  1 2 3\n  5 6 7\n  8 4 0\n")
         else:
             print(e)
         return
@@ -108,6 +110,6 @@ if __name__ == '__main__':
     parser.add_argument("--heuristic", type=str, choices=["manhattan", "hamming", \
             "euclidienne", "linear_conflicts"], help="Choose your heuristic (by default Linear conflicts is used)")
     parser.add_argument("--cost", type=str, choices=["a_star", "greedy_searches", \
-            "uniform_cost"], help="Choose your cost function (a_start = h + g, greedy_searches = h, uniform_cost = g)")
+            "uniform_cost"], help="Choose your cost function [a_star = h + g, greedy_searches = h, uniform_cost = g] (by default a_star is used)")
     args = parser.parse_args()
     n_puzzle(args.puzzle_file, args.heuristic, args.cost, args.visu)
