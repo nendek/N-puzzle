@@ -101,21 +101,30 @@ class NpuzzleGraph():
                 if tiles > self.puzzle[index] and self.puzzle[index] != 0:
                     nb_swap += 1
 
-        if self.len % 2 == 1 and nb_swap % 2 == 0:
-            if (self.len - 2) % 8 <= 3:
-                raise Exception("unsolvable")
-        if self.len % 2 == 0:
-            if nb_swap % 2 == 1:
-                if floor(self.puzzle.index(0) / self.len) % 2 == 1:
-                    if (self.len - 2) % 8 <= 3:
-                        raise Exception("unsolvable")
-        if self.len % 2 == 0:
-            if nb_swap % 2 == 0:
-                if floor(self.puzzle.index(0) / self.len) % 2 == 0:
-                    if (self.len - 2) % 8 <= 3:
-                        raise Exception("unsolvable")
+
         if (self.len - 2) % 8 > 3:
-            raise Exception("unsolvable")
+            if self.len % 2 == 1 and nb_swap % 2 == 1:
+                raise Exception("unsolvable")
+            if self.len % 2 == 0:
+                if nb_swap % 2 == 1:
+                    if floor(self.puzzle.index(0) / self.len) % 2 == 0:
+                        raise Exception("unsolvable")
+            if self.len % 2 == 0:
+                if nb_swap % 2 == 0:
+                    if floor(self.puzzle.index(0) / self.len) % 2 == 1:
+                        raise Exception("unsolvable")
+        else:
+            if self.len % 2 == 1 and nb_swap % 2 == 0:
+                raise Exception("unsolvable")
+            if self.len % 2 == 0:
+                if nb_swap % 2 == 1:
+                    if floor(self.puzzle.index(0) / self.len) % 2 == 1:
+                        raise Exception("unsolvable")
+            if self.len % 2 == 0:
+                if nb_swap % 2 == 0:
+                    if floor(self.puzzle.index(0) / self.len) % 2 == 0:
+                        raise Exception("unsolvable")
+
         return True
 
     def create_objectif(self):

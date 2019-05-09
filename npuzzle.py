@@ -58,7 +58,7 @@ def print_solution(result, graph, true_time):
         print(elem)
     print("time complexity =", graph.time_complexity)
     print("size complexity =", graph.size_complexity)
-    print("time duration =", true_time)
+    print("resolution duration =", true_time)
 
 def n_puzzle(f, heuristic, cost, visu=False):
     if heuristic == None:
